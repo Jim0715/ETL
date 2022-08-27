@@ -1,3 +1,24 @@
+/*
+1. 複製 資料庫檔案，附加資料庫
+2. 自行安裝 SSMS
+3. 安裝 SQL Server CU(Cumulative Update)17  (選擇性安裝)
+https://www.microsoft.com/en-us/download/details.aspx?id=100809
+
+4. 
+VS2019下載
+https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes
+
+SSAS VS2019
+https://marketplace.visualstudio.com/items?itemName=ProBITools.MicrosoftAnalysisServicesModelingProjects
+
+SSIS VS2019
+https://marketplace.visualstudio.com/items?itemName=SSIS.SqlServerIntegrationServicesProjects
+
+SSRS VS2019
+https://marketplace.visualstudio.com/items?itemName=ProBITools.MicrosoftReportProjectsforVisualStudio
+
+*/
+
 --新增已有資料的資料庫和記錄檔
 EXEC sp_attach_db
 'AdventureWorksDW2012','C:\資料庫檔\AdventureWorksDW2012_Data.mdf',
@@ -9,7 +30,16 @@ SELECT * FROM sys.databases;
 
 /*
 手動封裝 對中文北風匯出精靈的dtsx執行
-dtexec /FC:\AA\東風.dtsx
+cmd → dtexec /FC:\AA\東風.dtsx
+
+
+ 自動封裝 排程
+ 將SSMS用管理員身分執行，連線至 IS
+ 新增資料夾， 匯入要執行的封裝檔案 [避免檔案移動，造成排程失效]
+
+ 接著在SQL Server Arent中的作業 新增作業 擁有者 [sa]
+ 新增名稱、步驟、選取services封裝 匯入封裝檔案 伺服器選擇localhost 
+ 
 */
 
 CREATE DATABASE 練習
@@ -30,16 +60,8 @@ GO
  從中文北風匯出 文字檔 [東風訂單.txt]
  再將文字檔 [東風訂單.txt] 匯入至 練習 資料庫中
 
- 如要再次匯入相同檔案，編輯對應 選項中
+ 如要再次匯入相同檔案，編輯對應 選項中 [須已存在檔案]
  可以選擇刪除資料整筆匯入 或 附加
-
- 設定封裝排程
- 將SSMS用管理員身分執行，連線至 IS
- 新增資料夾， 匯入要執行的封裝檔案，避免檔案移動，造成排程失效
-
- 接著在SQL Server Arent中的作業 新增作業 擁有者 [sa]
- 新增名稱、步驟、選取services封裝 匯入封裝檔案 伺服器選擇localhost 
- 
 */
 
 SELECT * FROM 練習.dbo.東風訂單;
