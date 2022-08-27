@@ -170,3 +170,19 @@ SELECT * FROM [dbo].[北風客戶少];
 BULK INSERT [練習].[dbo].[北風客戶少] FROM 'C:\AA\北風客戶1.txt'
 WITH(FORMATFILE='C:\AA\北風少.fmt');
 
+
+--少欄位繪製多欄位
+--bcp "SELECT 客戶編號,公司名稱,連絡人,連絡人職稱,電話,傳真電話,地址 FROM 中文北風.dbo.客戶" queryout C:\AA\北風客戶少.csv -T -t, -w
+SELECT 客戶編號,公司名稱,連絡人,連絡人職稱,電話,傳真電話,地址 INTO 北風客戶少 FROM 中文北風.dbo.客戶 WHERE 1=0;
+
+TRUNCATE TABLE [dbo].[北風客戶];
+TRUNCATE TABLE [dbo].[北風客戶少];
+SELECT * FROM [dbo].[北風客戶];
+SELECT * FROM [dbo].[北風客戶少];
+
+--bcp [練習].[dbo].[北風客戶少] format nul -T -w -t, -fC:\AA\北風少.fmt --創建格式檔
+--產生格式檔 nul可以接受NULL -T信任連結-w寬字元類型 -t, CSV檔以,做分格 -f格式檔案
+--bcp [練習].[dbo].[北風客戶少] in C:\AA\北風客戶1.txt -T -fC:\AA\北風少.fmt
+
+BULK INSERT [練習].[dbo].[北風客戶少] FROM 'C:\AA\北風客戶1.txt'
+WITH(FORMATFILE='C:\AA\北風少.fmt');
