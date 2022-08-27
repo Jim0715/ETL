@@ -1,3 +1,6 @@
+USE 中文北風
+GO
+
 /*
 1. 複製 資料庫檔案，附加資料庫
 2. 自行安裝 SSMS
@@ -20,6 +23,7 @@ https://marketplace.visualstudio.com/items?itemName=ProBITools.MicrosoftReportPr
 */
 
 --新增已有資料的資料庫和記錄檔
+--https://reurl.cc/D34Wvm
 EXEC sp_attach_db
 'AdventureWorksDW2012','C:\資料庫檔\AdventureWorksDW2012_Data.mdf',
 'C:\資料庫檔\AdventureWorksDW2012_log.ldf';
@@ -66,3 +70,86 @@ GO
 
 SELECT * FROM 練習.dbo.東風訂單;
 TRUNCATE TABLE 練習.dbo.東風訂單; --清空資料表
+
+/*
+https://reurl.cc/V1Ny3Q
+用 [匯入一般檔案] 匯入test檔
+因用 [匯入匯出精靈] 即用"做分隔，Name欄位是無法有效的辨識。
+*/
+
+/*
+利用cmd 匯出資料庫中的文字檔
+bcp/?
+
+bcp 中文北風.dbo.客戶 out C:\AA\北風客戶1.txt -T -w -t
+-T Window驗證
+-U帳號 -P密碼 SQL驗證
+-t 欄位分隔符號
+*/
+
+--匯出
+SELECT * INTO 練習.dbo.北風客戶 FROM 中文北風.dbo.客戶 WHERE 1=0;
+SELECT * FROM 練習.dbo.北風客戶
+--bcp 目的地 dbo 來源 in 位置
+--bcp 練習.dbo.北風客戶 in C:\AA\北風客戶.txt -T -w -t 
+
+--匯入
+--bcp "SELECT 客戶編號,公司名稱,連絡人,連絡人職稱,電話,傳真電話,地址 FROM 中文北風.dbo.客戶 WHERE 地址 LIKE '台北%'"queryout C:\AA\北風台北客戶.csv -T -t, -w
+SELECT 客戶編號,公司名稱,連絡人,連絡人職稱,電話,傳真電話,地址 FROM 中文北風.dbo.客戶 WHERE 地址 LIKE '台北%'
+
+
+--
+SELECT * INTO 練習.dbo.AW銷售資料 FROM [AdventureWorksDW2012].[dbo].[FactInternetSales] WHERE 1=0;
+
+--備份現有資料庫
+RESTORE HEADERONLY FROM DISK='C:\資料庫檔\ContosoRetailDW.bak' --查看主資料庫
+RESTORE FILELISTONLY FROM DISK='C:\資料庫檔\ContosoRetailDW.bak'  --查看資料庫中的檔案
+
+RESTORE DATABASE ContosoRetailDW FROM DISK='C:\資料庫檔\ContosoRetailDW.bak'
+WITH MOVE 'ContosoRetailDW2.0' TO 'C:\資料庫檔\ContosoRetailDW_Data.mdf'
+	,MOVE 'ContosoRetailDW2.0_log' TO 'C:\資料庫檔\ContosoRetailDW_Log.ldf',RECOVERY;
+
+EXEC sp_helpdb
+
+SELECT COUNT(*) FROM [ContosoRetailDW].[dbo].[FactSales] --計算資料筆數
+SELECT TOP(1000) * FROM [ContosoRetailDW].[dbo].[FactSales] --查看前1000筆資料
+--bcp [ContosoRetailDW].[dbo].[FactSales] out C:\AA\Cpntoso_sales.txt -T -t ,-w  
+--bcp [ContosoRetailDW].[dbo].[FactSales] out C:\AA\Cpntoso_sales.nn -T -t -n  (-n 原生類型)
+
+SELECT * INTO 練習.dbo.Contoso銷售資料 FROM [ContosoRetailDW].[dbo].[FactSales] WHERE 1=0;  --創建空的資料表
+--bcp 練習.dbo.Contoso銷售資料 in c:\AA\Cpntoso_sales.txt -T -t -w -b  (-b 增加批次寫入量,只能用在匯入)
+--bcp 練習.dbo.Contoso銷售資料 in c:\AA\Cpntoso_sales.nn -T -n -b10000
+
+SELECT TOP(1000) * FROM 練習.dbo.Contoso銷售資料
+TRUNCATE TABLE 練習.dbo.Contoso銷售資料; --清空資料表
+
+--SQL語法BULK INSERT 只能用在匯入
+BULK INSERT 練習.dbo.Contoso銷售資料 FROM 'C:\AA\Cpntoso_sales.nn'
+WITH (DATAFILETYPE='native',BATCHSIZE=10000);
+
+BULK INSERT 練習.dbo.北風客戶 FROM 'C:\AA\北風客戶1.txt'
+WITH (DATAFILETYPE='widechar');
+
+SELECT * FROM 練習.dbo.北風客戶;
+TRUNCATE TABLE 練習.dbo.北風客戶;
+
+
+-- 匯入TestData
+-- https://reurl.cc/vW0yeA
+USE 練習
+
+CREATE TABLE 練習員工
+(
+    員工編號 INT,
+	姓名 NVARCHAR(10),
+	生日 DATE,
+	薪資 INT
+)
+
+
+--bcp 練習.dbo.練習員工 in C:\AA\TestData.txt -T -t, -w  讀一串字 無法讀日期
+
+BULK INSERT 練習.dbo.練習員工 FROM 'c:\AA\TestData.txt'
+WITH (DATAFILETYPE='widechar',FIELDTERMINATOR=',');
+
+SELECT * FROM 練習.dbo.練習員工;
