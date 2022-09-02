@@ -87,9 +87,12 @@ bcp 中文北風.dbo.客戶 out C:\AA\北風客戶1.txt -T -w -t
 -t 欄位分隔符號
 */
 
---匯入資料
+
+--建立空白資料表，只有欄位
 SELECT * INTO 練習.dbo.北風客戶 FROM 中文北風.dbo.客戶 WHERE 1=0;
 SELECT * FROM 練習.dbo.北風客戶
+
+--匯入資料
 --bcp 目的地 dbo 來源 in 位置
 --bcp 練習.dbo.北風客戶 in C:\AA\北風客戶.txt -T -w -t 
 
